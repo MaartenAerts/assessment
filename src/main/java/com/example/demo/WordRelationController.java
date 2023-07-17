@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/word-relation")
@@ -20,7 +21,12 @@ public class WordRelationController {
     }
 
     @GetMapping
-    public List<WordRelationDTO> findAll(@RequestParam(value = "type", required = false) String type) {
-        return wordRelationService.findAll(type).stream().map(WordRelationDTO::of).toList();
+    public List<WordRelationDTO> findAll(@RequestParam(value = "type", required = false) String type, @RequestParam(value = "inverse", required = false) boolean inverse) {
+        List<WordRelation> relations = wordRelationService.findAll(type);
+        List<WordRelationDTO> relationDtos = relations.stream().map(WordRelationDTO::of).collect(Collectors.toList());
+        if (inverse) {
+            relationDtos.addAll(relations.stream().map(WordRelationDTO::inverse).toList());
+        }
+        return relationDtos;
     }
 }

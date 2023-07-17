@@ -111,7 +111,7 @@ class WordRelationTest {
                                                         """));
 		}
 		@Test
-		@DisplayName("given some relations exist and a fiter then filtered relations are returned")
+		@DisplayName("given some relations exist and a filter then filtered relations are returned")
 		void getAllFiltered() throws Exception {
 			repository.save(sonAntonym());
 			repository.save(roadAntonym());
@@ -133,6 +133,56 @@ class WordRelationTest {
                               }
                             ]
                                                         """));
+		}
+		@Test
+		@DisplayName("given some relations exist and inverse then relations are included")
+		void getAllWithInverse() throws Exception {
+			repository.save(sonAntonym());
+			repository.save(roadAntonym());
+			repository.save(roadRelated());
+
+			mockMvc.perform(get(BASE_URL).param("inverse", "true"))
+					.andExpect(status().isOk())
+					.andExpect(content().json("""
+  [
+    {
+      "firstWord": "son",
+      "secondWord": "daughter",
+      "type": "antonym",
+      "inverse": false
+    },
+    {
+      "firstWord": "road",
+      "secondWord": "street",
+      "type": "antonym",
+      "inverse": false
+    },
+    {
+      "firstWord": "road",
+      "secondWord": "avenue",
+      "type": "related",
+      "inverse": false
+    },
+    {
+      "firstWord": "daughter",
+      "secondWord": "son",
+      "type": "antonym",
+      "inverse": true
+    },
+    {
+      "firstWord": "street",
+      "secondWord": "road",
+      "type": "antonym",
+      "inverse": true
+    },
+    {
+      "firstWord": "avenue",
+      "secondWord": "road",
+      "type": "related",
+      "inverse": true
+    }
+  ]
+                                                       \s"""));
 		}
 	}
 

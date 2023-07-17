@@ -80,6 +80,31 @@ class WordRelationTest {
                             [{"message":"Duplicate relation"}]
                             """));
         }
+        @Test
+        @DisplayName("given relation with non alphanumeric characters then error is returned")
+        void illegalCharacters() throws Exception {
+
+            mockMvc.perform(MockMvcRequestBuilders.post(BASE_URL).contentType(MediaType.APPLICATION_JSON).content("""
+                            {
+                              "firstWord": "1son",
+                              "secondWord": "%daughter",
+                              "type": "antonym ok"
+                            }
+                            """))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(content().json("""
+                            [
+                              {
+                                "message": "Only alphanumeric or spaces allowed",
+                                "field": "firstWord"
+                              },
+                              {
+                                "message": "Only alphanumeric or spaces allowed",
+                                "field": "secondWord"
+                              }
+                            ]
+                                                        """));
+        }
 
         @Test
         @DisplayName("given relation with all fields including uppercases and spaces then relation is stored with all fields in trimmed lowercase")

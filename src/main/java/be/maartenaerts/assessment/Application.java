@@ -1,4 +1,4 @@
-package com.example.demo;
+package be.maartenaerts.assessment;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

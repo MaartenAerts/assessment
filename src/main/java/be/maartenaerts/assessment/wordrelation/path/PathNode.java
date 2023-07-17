@@ -1,6 +1,6 @@
-package com.example.demo.wordrelation.path;
+package be.maartenaerts.assessment.wordrelation.path;
 
-import com.example.demo.wordrelation.WordRelation;
+import be.maartenaerts.assessment.wordrelation.WordRelation;
 
 public record PathNode(WordRelation wordRelation, boolean inverse) {
     public String start() {

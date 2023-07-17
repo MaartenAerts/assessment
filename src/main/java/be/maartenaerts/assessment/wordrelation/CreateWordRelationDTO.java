@@ -1,6 +1,6 @@
-package com.example.demo.wordrelation;
+package be.maartenaerts.assessment.wordrelation;
 
-import com.example.demo.OnlyAlphanumericOrSpaces;
+import be.maartenaerts.assessment.OnlyAlphanumericOrSpaces;
 import jakarta.validation.constraints.NotBlank;
 
 public record CreateWordRelationDTO(@NotBlank @OnlyAlphanumericOrSpaces String firstWord,

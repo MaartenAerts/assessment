@@ -1,4 +1,4 @@
-package com.example.demo.wordrelation;
+package be.maartenaerts.assessment.wordrelation;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;

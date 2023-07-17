@@ -1,8 +1,8 @@
-package com.example.demo.wordrelation;
+package be.maartenaerts.assessment.wordrelation;
 
-import com.example.demo.exception.ConflictException;
-import com.example.demo.exception.NotFoundException;
-import com.example.demo.wordrelation.path.PathNode;
+import be.maartenaerts.assessment.exception.ConflictException;
+import be.maartenaerts.assessment.exception.NotFoundException;
+import be.maartenaerts.assessment.wordrelation.path.PathNode;
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;

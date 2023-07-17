@@ -63,6 +63,23 @@ class WordRelationTest {
                             }
                             """));
         }
+        @Test
+        @DisplayName("given relation exists and duplicate is provided then error is returned")
+        void duplicateRelation() throws Exception {
+            repository.save(sonAntonym());
+
+            mockMvc.perform(MockMvcRequestBuilders.post(BASE_URL).contentType(MediaType.APPLICATION_JSON).content("""
+                            {
+                              "firstWord": "son",
+                              "secondWord": "daughter",
+                              "type": "antonym"
+                            }
+                            """))
+                    .andExpect(status().isConflict())
+                    .andExpect(content().json("""
+                            [{"message":"Duplicate relation"}]
+                            """));
+        }
 
         @Test
         @DisplayName("given relation with all fields including uppercases and spaces then relation is stored with all fields in trimmed lowercase")
@@ -92,14 +109,30 @@ class WordRelationTest {
         }
 
         @Test
-        @DisplayName("given empty relation then error")
+        @DisplayName("given empty relation then errors")
         void blank() throws Exception {
             mockMvc.perform(MockMvcRequestBuilders.post(BASE_URL).contentType(MediaType.APPLICATION_JSON).content("""
                             {
                             					
                             }
                             """))
-                    .andExpect(status().isBadRequest());
+                    .andExpect(status().isBadRequest())
+                    .andExpect(content().json("""
+                            [
+                              {
+                                "message": "must not be blank",
+                                "field": "type"
+                              },
+                              {
+                                "message": "must not be blank",
+                                "field": "secondWord"
+                              },
+                              {
+                                "message": "must not be blank",
+                                "field": "firstWord"
+                              }
+                            ]
+                                                        """));
         }
     }
 

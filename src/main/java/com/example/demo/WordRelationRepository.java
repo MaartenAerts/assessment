@@ -6,4 +6,6 @@ import java.util.List;
 
 public interface WordRelationRepository extends JpaRepository<WordRelation, Long> {
     List<WordRelation> findByType(String type);
+
+    boolean existsByFirstWordAndSecondWord(String secondWord, String firstWord);
 }

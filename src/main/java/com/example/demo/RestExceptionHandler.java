@@ -27,14 +27,20 @@ public class RestExceptionHandler {
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<List<ErrorDTO>> dataIntegrityViolationException(DataIntegrityViolationException exception) {
         if (exception.getCause() instanceof ConstraintViolationException e && e.getConstraintName().toLowerCase().contains("word_relation_unique")) {
-            return ResponseEntity.status(409).body(Collections.singletonList(new ErrorDTO("Duplicate relation")));
+            return ResponseEntity.status(409).body(Collections.singletonList(new ErrorDTO("Relation already exists")));
         }
         return exception(exception);
+    }
+
+    @ExceptionHandler(ConflictException.class)
+    public ResponseEntity<List<ErrorDTO>> conflictException(ConflictException exception) {
+        return ResponseEntity.status(409).body(Collections.singletonList(new ErrorDTO(exception.getMessage())));
     }
 
     @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ResponseEntity<List<ErrorDTO>> exception(Exception exception) {
+
         log.error("Unexpected exception occured", exception);
         return ResponseEntity.internalServerError().body(singletonList(new ErrorDTO("Unexpected error occured. Please contact customer support.")));
     }

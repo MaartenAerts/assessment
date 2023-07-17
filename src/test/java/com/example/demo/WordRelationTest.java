@@ -1,16 +1,15 @@
 package com.example.demo;
 
 import org.flywaydb.core.Flyway;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+
+import javax.sql.DataSource;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -30,6 +29,9 @@ class WordRelationTest {
     private WordRelationRepository repository;
     @Autowired
     private Flyway flyway;
+
+    @Autowired
+    private DataSource dataSource;
 
     @Test
     void contextLoads() {
@@ -77,7 +79,24 @@ class WordRelationTest {
                             """))
                     .andExpect(status().isConflict())
                     .andExpect(content().json("""
-                            [{"message":"Duplicate relation"}]
+                            [{"message":"Relation already exists"}]
+                            """));
+        }
+        @Test
+        @DisplayName("given relation exists and inverse duplicate is provided then error is returned")
+        void inverseDuplicateRelation() throws Exception {
+            repository.save(sonAntonym());
+
+            mockMvc.perform(MockMvcRequestBuilders.post(BASE_URL).contentType(MediaType.APPLICATION_JSON).content("""
+                            {
+                              "firstWord": "daughter",
+                              "secondWord": "son",
+                              "type": "antonym"
+                            }
+                            """))
+                    .andExpect(status().isConflict())
+                    .andExpect(content().json("""
+                            [{"message":"Inverse relation already exists"}]
                             """));
         }
         @Test

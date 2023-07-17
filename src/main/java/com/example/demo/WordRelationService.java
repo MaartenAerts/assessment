@@ -14,6 +14,10 @@ public class WordRelationService {
     private WordRelationRepository repository;
 
     public WordRelation create(WordRelation wordRelation) {
+        if (repository.existsByFirstWordAndSecondWord(wordRelation.getSecondWord(), wordRelation.getFirstWord())) {
+//            Can't be done with constraint in in-memory database
+            throw new ConflictException("Inverse relation already exists");
+        }
         return repository.save(wordRelation);
     }
 

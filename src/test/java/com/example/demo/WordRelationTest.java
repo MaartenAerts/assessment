@@ -1,5 +1,7 @@
 package com.example.demo;
 
+import com.example.demo.wordrelation.WordRelation;
+import com.example.demo.wordrelation.WordRelationRepository;
 import org.flywaydb.core.Flyway;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

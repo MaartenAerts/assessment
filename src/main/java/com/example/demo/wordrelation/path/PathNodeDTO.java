@@ -1,4 +1,4 @@
-package com.example.demo;
+package com.example.demo.wordrelation.path;
 
 public record PathNodeDTO(String start, String type, String end) {
     public PathNodeDTO(PathNode pathNode) {

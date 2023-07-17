@@ -1,4 +1,4 @@
-package com.example.demo;
+package com.example.demo.wordrelation;
 
 public record WordRelationDTO(String firstWord, String secondWord, String type, boolean inverse) {
     public static WordRelationDTO of(WordRelation wordRelation) {

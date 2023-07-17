@@ -1,5 +1,6 @@
-package com.example.demo;
+package com.example.demo.wordrelation;
 
+import com.example.demo.wordrelation.path.PathNodeDTO;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;

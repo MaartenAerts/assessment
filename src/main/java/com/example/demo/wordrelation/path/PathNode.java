@@ -1,4 +1,6 @@
-package com.example.demo;
+package com.example.demo.wordrelation.path;
+
+import com.example.demo.wordrelation.WordRelation;
 
 public record PathNode(WordRelation wordRelation, boolean inverse) {
     public String start() {

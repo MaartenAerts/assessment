@@ -1,7 +1,10 @@
 package com.example.demo;
 
 import org.flywaydb.core.Flyway;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -22,6 +25,7 @@ class WordRelationTest {
 
     public static final String BASE_URL = "/word-relation";
     public static final String ANTONYM = "antonym";
+    public static final String RELATED = "related";
     @Autowired
     private MockMvc mockMvc;
     @Autowired
@@ -65,10 +69,11 @@ class WordRelationTest {
                             }
                             """));
         }
+
         @Test
         @DisplayName("given relation exists and duplicate is provided then error is returned")
         void duplicateRelation() throws Exception {
-            repository.save(sonAntonym());
+            repository.save(sonDaughterAntonym());
 
             mockMvc.perform(MockMvcRequestBuilders.post(BASE_URL).contentType(MediaType.APPLICATION_JSON).content("""
                             {
@@ -82,10 +87,11 @@ class WordRelationTest {
                             [{"message":"Relation already exists"}]
                             """));
         }
+
         @Test
         @DisplayName("given relation exists and inverse duplicate is provided then error is returned")
         void inverseDuplicateRelation() throws Exception {
-            repository.save(sonAntonym());
+            repository.save(sonDaughterAntonym());
 
             mockMvc.perform(MockMvcRequestBuilders.post(BASE_URL).contentType(MediaType.APPLICATION_JSON).content("""
                             {
@@ -99,6 +105,7 @@ class WordRelationTest {
                             [{"message":"Inverse relation already exists"}]
                             """));
         }
+
         @Test
         @DisplayName("given relation with non alphanumeric characters then error is returned")
         void illegalCharacters() throws Exception {
@@ -144,12 +151,12 @@ class WordRelationTest {
                             }
                             """));
 
-			assertThat(repository.findAll()).hasSize(1).first().satisfies(wr -> {
-				assertThat(wr.getFirstWord()).isEqualTo("son");
-				assertThat(wr.getSecondWord()).isEqualTo("daughter");
-				assertThat(wr.getType()).isEqualTo("antonym");
-				assertThat(wr.getId()).isNotNull();
-			});
+            assertThat(repository.findAll()).hasSize(1).first().satisfies(wr -> {
+                assertThat(wr.getFirstWord()).isEqualTo("son");
+                assertThat(wr.getSecondWord()).isEqualTo("daughter");
+                assertThat(wr.getType()).isEqualTo("antonym");
+                assertThat(wr.getId()).isNotNull();
+            });
         }
 
         @Test
@@ -186,9 +193,9 @@ class WordRelationTest {
         @Test
         @DisplayName("given some relations exist then relations are returned")
         void getAll() throws Exception {
-            repository.save(sonAntonym());
-            repository.save(roadAntonym());
-            repository.save(roadRelated());
+            repository.save(sonDaughterAntonym());
+            repository.save(roadStreetAntonym());
+            repository.save(roadAvenueRelated());
 
             mockMvc.perform(get(BASE_URL))
                     .andExpect(status().isOk())
@@ -216,9 +223,9 @@ class WordRelationTest {
         @Test
         @DisplayName("given some relations exist and a filter then filtered relations are returned")
         void getAllFiltered() throws Exception {
-            repository.save(sonAntonym());
-            repository.save(roadAntonym());
-            repository.save(roadRelated());
+            repository.save(sonDaughterAntonym());
+            repository.save(roadStreetAntonym());
+            repository.save(roadAvenueRelated());
 
             mockMvc.perform(get(BASE_URL).param("type", ANTONYM))
                     .andExpect(status().isOk())
@@ -241,9 +248,9 @@ class WordRelationTest {
         @Test
         @DisplayName("given some relations exist and inverse then relations are included")
         void getAllWithInverse() throws Exception {
-            repository.save(sonAntonym());
-            repository.save(roadAntonym());
-            repository.save(roadRelated());
+            repository.save(sonDaughterAntonym());
+            repository.save(roadStreetAntonym());
+            repository.save(roadAvenueRelated());
 
             mockMvc.perform(get(BASE_URL).param("inverse", "true"))
                     .andExpect(status().isOk())
@@ -290,15 +297,81 @@ class WordRelationTest {
         }
     }
 
-    private static WordRelation roadRelated() {
-        return new WordRelation("road", "avenue", "related");
+    @Nested
+    @DisplayName("When Find Path")
+    class FindPath {
+        @Test
+        @DisplayName("given multiple linked relations then path is returned")
+        void path() throws Exception {
+            repository.save(sonDaughterAntonym());
+            repository.save(roadStreetAntonym());
+            repository.save(roadAvenueRelated());
+            repository.save(streetRoadSynonym());
+
+            mockMvc.perform(get(BASE_URL + "/path/street/avenue"))
+                    .andExpect(status().isOk())
+                    .andExpect(content().json("""
+                            [
+                              {
+                                "start": "street",
+                                "type": "antonym",
+                                "end": "road"
+                              },
+                              {
+                                "start": "road",
+                                "type": "related",
+                                "end": "avenue"
+                              }
+                            ]
+                                                                                   """));
+        }
+        @Test
+        @DisplayName("given multiple linked relations including inverse and transitive then path is returned")
+        void complexPath() throws Exception {
+            repository.save(sonDaughterAntonym());
+            repository.save(roadStreetAntonym());
+            repository.save(roadAvenueRelated());
+            repository.save(streetRoadSynonym());
+            repository.save(new WordRelation("cul de sac", "avenue", RELATED));
+
+            mockMvc.perform(get(BASE_URL + "/path/street/cul de sac"))
+                    .andExpect(status().isOk())
+                    .andExpect(content().json("""
+                            [
+                              {
+                                "start": "street",
+                                "type": "antonym",
+                                "end": "road"
+                              },
+                              {
+                                "start": "road",
+                                "type": "related",
+                                "end": "avenue"
+                              },
+                              {
+                                "start": "avenue",
+                                "type": "related",
+                                "end": "cul de sac"
+                              }
+                            ]
+                                                                                                              \s"""));
+        }
     }
 
-    private static WordRelation roadAntonym() {
+
+    private static WordRelation roadAvenueRelated() {
+        return new WordRelation("road", "avenue", RELATED);
+    }
+
+    private static WordRelation roadStreetAntonym() {
         return new WordRelation("road", "street", ANTONYM);
     }
 
-    private static WordRelation sonAntonym() {
+    private static WordRelation streetRoadSynonym() {
+        return new WordRelation("street", "road", "synonym");
+    }
+
+    private static WordRelation sonDaughterAntonym() {
         return new WordRelation("son", "daughter", ANTONYM);
     }
 }

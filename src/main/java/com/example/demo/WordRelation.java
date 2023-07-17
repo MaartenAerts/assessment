@@ -8,12 +8,14 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @Table(name = "word_relation")
 @Entity
+@ToString
 public class WordRelation {
     @Id
     @GeneratedValue

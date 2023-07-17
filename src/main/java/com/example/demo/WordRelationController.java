@@ -29,4 +29,10 @@ public class WordRelationController {
         }
         return relationDtos;
     }
+
+    @GetMapping("/path/{source}/{target}")
+    public List<PathNodeDTO> findPath(@PathVariable("source") String source, @PathVariable("target") String target) {
+        return wordRelationService.findPath(source, target).stream().map(PathNodeDTO::new).toList();
+    }
+
 }

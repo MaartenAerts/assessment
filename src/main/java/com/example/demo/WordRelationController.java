@@ -20,7 +20,7 @@ public class WordRelationController {
     }
 
     @GetMapping
-    public List<WordRelationDTO> findAll() {
-        return wordRelationService.findAll().stream().map(WordRelationDTO::of).toList();
+    public List<WordRelationDTO> findAll(@RequestParam(value = "type", required = false) String type) {
+        return wordRelationService.findAll(type).stream().map(WordRelationDTO::of).toList();
     }
 }

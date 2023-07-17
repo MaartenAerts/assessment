@@ -1,6 +1,5 @@
 package com.example.demo;
 
-import jakarta.persistence.EntityManager;
 import org.flywaydb.core.Flyway;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -11,11 +10,9 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
-import java.rmi.dgc.DGC;
-
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -24,73 +21,101 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 class WordRelationTest {
 
-	public static final String BASE_URL = "/word-relation";
-	public static final String ANTONYM = "antonym";
-	@Autowired
-	private MockMvc mockMvc;
-	@Autowired
+    public static final String BASE_URL = "/word-relation";
+    public static final String ANTONYM = "antonym";
+    @Autowired
+    private MockMvc mockMvc;
+    @Autowired
 
-	private WordRelationRepository repository;
-	@Autowired
-	private Flyway flyway;
+    private WordRelationRepository repository;
+    @Autowired
+    private Flyway flyway;
 
-	@Test
-	void contextLoads() {
-	}
+    @Test
+    void contextLoads() {
+    }
 
-	@BeforeEach
-	void setUp() {
-		flyway.clean();
-		flyway.migrate();
-	}
+    @BeforeEach
+    void setUp() {
+        flyway.clean();
+        flyway.migrate();
+    }
 
-	@Nested
-	@DisplayName("When create")
-	class Create {
-		@Test
-		@DisplayName("given relation then relation is stored")
-		void ok() throws Exception {
-			mockMvc.perform(MockMvcRequestBuilders.post(BASE_URL).contentType(MediaType.APPLICATION_JSON).content("""
-							{
-							  "firstWord": "son",
-							  "secondWord": "daughter",
-							  "type": "antonym"
-							}
-							"""))
-					.andExpect(status().isCreated())
-					.andExpect(content().json("""
+    @Nested
+    @DisplayName("When create")
+    class Create {
+        @Test
+        @DisplayName("given relation then relation is stored")
+        void ok() throws Exception {
+            mockMvc.perform(MockMvcRequestBuilders.post(BASE_URL).contentType(MediaType.APPLICATION_JSON).content("""
+                            {
+                              "firstWord": "son",
+                              "secondWord": "daughter",
+                              "type": "antonym"
+                            }
+                            """))
+                    .andExpect(status().isCreated())
+                    .andExpect(content().json("""
                             {
                               "firstWord": "son",
                               "secondWord": "daughter",
                               "type": "antonym"
                             }
                             """));
-		}
-		@Test
-		@DisplayName("given empty relation then error")
-		void blank() throws Exception {
-			mockMvc.perform(MockMvcRequestBuilders.post(BASE_URL).contentType(MediaType.APPLICATION_JSON).content("""
-							{
-					
-							}
-							"""))
-					.andExpect(status().isBadRequest());
-		}
-	}
+        }
 
-	@Nested
-	@DisplayName("When GET")
-	class Get {
-		@Test
-		@DisplayName("given some relations exist then relations are returned")
-		void getAll() throws Exception {
-			repository.save(sonAntonym());
-			repository.save(roadAntonym());
-			repository.save(roadRelated());
+        @Test
+        @DisplayName("given relation with all fields including uppercases and spaces then relation is stored with all fields in trimmed lowercase")
+        void saveAsLowerCase() throws Exception {
+            mockMvc.perform(MockMvcRequestBuilders.post(BASE_URL).contentType(MediaType.APPLICATION_JSON).content("""
+                            {
+                              "firstWord": " Son ",
+                              "secondWord": " Daughter ",
+                              "type": " Antonym "
+                            }
+                            """))
+                    .andExpect(status().isCreated())
+                    .andExpect(content().json("""
+                            {
+                              "firstWord": "son",
+                              "secondWord": "daughter",
+                              "type": "antonym"
+                            }
+                            """));
 
-			mockMvc.perform(get(BASE_URL))
-					.andExpect(status().isOk())
-					.andExpect(content().json("""
+			assertThat(repository.findAll()).hasSize(1).first().satisfies(wr -> {
+				assertThat(wr.getFirstWord()).isEqualTo("son");
+				assertThat(wr.getSecondWord()).isEqualTo("daughter");
+				assertThat(wr.getType()).isEqualTo("antonym");
+				assertThat(wr.getId()).isNotNull();
+			});
+        }
+
+        @Test
+        @DisplayName("given empty relation then error")
+        void blank() throws Exception {
+            mockMvc.perform(MockMvcRequestBuilders.post(BASE_URL).contentType(MediaType.APPLICATION_JSON).content("""
+                            {
+                            					
+                            }
+                            """))
+                    .andExpect(status().isBadRequest());
+        }
+    }
+
+    @Nested
+    @DisplayName("When GET")
+    class Get {
+        @Test
+        @DisplayName("given some relations exist then relations are returned")
+        void getAll() throws Exception {
+            repository.save(sonAntonym());
+            repository.save(roadAntonym());
+            repository.save(roadRelated());
+
+            mockMvc.perform(get(BASE_URL))
+                    .andExpect(status().isOk())
+                    .andExpect(content().json("""
                             [
                               {
                                 "firstWord": "son",
@@ -109,17 +134,18 @@ class WordRelationTest {
                               }
                             ]
                                                         """));
-		}
-		@Test
-		@DisplayName("given some relations exist and a filter then filtered relations are returned")
-		void getAllFiltered() throws Exception {
-			repository.save(sonAntonym());
-			repository.save(roadAntonym());
-			repository.save(roadRelated());
+        }
 
-			mockMvc.perform(get(BASE_URL).param("type", ANTONYM))
-					.andExpect(status().isOk())
-					.andExpect(content().json("""
+        @Test
+        @DisplayName("given some relations exist and a filter then filtered relations are returned")
+        void getAllFiltered() throws Exception {
+            repository.save(sonAntonym());
+            repository.save(roadAntonym());
+            repository.save(roadRelated());
+
+            mockMvc.perform(get(BASE_URL).param("type", ANTONYM))
+                    .andExpect(status().isOk())
+                    .andExpect(content().json("""
                             [
                               {
                                 "firstWord": "son",
@@ -133,68 +159,69 @@ class WordRelationTest {
                               }
                             ]
                                                         """));
-		}
-		@Test
-		@DisplayName("given some relations exist and inverse then relations are included")
-		void getAllWithInverse() throws Exception {
-			repository.save(sonAntonym());
-			repository.save(roadAntonym());
-			repository.save(roadRelated());
+        }
 
-			mockMvc.perform(get(BASE_URL).param("inverse", "true"))
-					.andExpect(status().isOk())
-					.andExpect(content().json("""
-  [
-    {
-      "firstWord": "son",
-      "secondWord": "daughter",
-      "type": "antonym",
-      "inverse": false
-    },
-    {
-      "firstWord": "road",
-      "secondWord": "street",
-      "type": "antonym",
-      "inverse": false
-    },
-    {
-      "firstWord": "road",
-      "secondWord": "avenue",
-      "type": "related",
-      "inverse": false
-    },
-    {
-      "firstWord": "daughter",
-      "secondWord": "son",
-      "type": "antonym",
-      "inverse": true
-    },
-    {
-      "firstWord": "street",
-      "secondWord": "road",
-      "type": "antonym",
-      "inverse": true
-    },
-    {
-      "firstWord": "avenue",
-      "secondWord": "road",
-      "type": "related",
-      "inverse": true
+        @Test
+        @DisplayName("given some relations exist and inverse then relations are included")
+        void getAllWithInverse() throws Exception {
+            repository.save(sonAntonym());
+            repository.save(roadAntonym());
+            repository.save(roadRelated());
+
+            mockMvc.perform(get(BASE_URL).param("inverse", "true"))
+                    .andExpect(status().isOk())
+                    .andExpect(content().json("""
+                            [
+                              {
+                                "firstWord": "son",
+                                "secondWord": "daughter",
+                                "type": "antonym",
+                                "inverse": false
+                              },
+                              {
+                                "firstWord": "road",
+                                "secondWord": "street",
+                                "type": "antonym",
+                                "inverse": false
+                              },
+                              {
+                                "firstWord": "road",
+                                "secondWord": "avenue",
+                                "type": "related",
+                                "inverse": false
+                              },
+                              {
+                                "firstWord": "daughter",
+                                "secondWord": "son",
+                                "type": "antonym",
+                                "inverse": true
+                              },
+                              {
+                                "firstWord": "street",
+                                "secondWord": "road",
+                                "type": "antonym",
+                                "inverse": true
+                              },
+                              {
+                                "firstWord": "avenue",
+                                "secondWord": "road",
+                                "type": "related",
+                                "inverse": true
+                              }
+                            ]
+                                                                                 \s"""));
+        }
     }
-  ]
-                                                       \s"""));
-		}
-	}
 
-	private static WordRelation roadRelated() {
-		return new WordRelation("road", "avenue", "related");
-	}
+    private static WordRelation roadRelated() {
+        return new WordRelation("road", "avenue", "related");
+    }
 
-	private static WordRelation roadAntonym() {
-		return new WordRelation("road", "street", ANTONYM);
-	}
+    private static WordRelation roadAntonym() {
+        return new WordRelation("road", "street", ANTONYM);
+    }
 
-	private static WordRelation sonAntonym() {
-		return new WordRelation("son", "daughter", ANTONYM);
-	}
+    private static WordRelation sonAntonym() {
+        return new WordRelation("son", "daughter", ANTONYM);
+    }
 }

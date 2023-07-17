@@ -24,8 +24,8 @@ public class WordRelation {
     private String type;
 
     public WordRelation(@NotBlank String firstWord, @NotBlank String secondWord, @NotBlank String type) {
-        this.firstWord = firstWord;
-        this.secondWord = secondWord;
-        this.type = type;
+        this.firstWord = firstWord.toLowerCase().trim();
+        this.secondWord = secondWord.toLowerCase().trim();
+        this.type = type.toLowerCase().trim();
     }
 }

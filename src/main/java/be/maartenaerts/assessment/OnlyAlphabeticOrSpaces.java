@@ -6,13 +6,13 @@ import jakarta.validation.constraints.Pattern;
 
 import java.lang.annotation.*;
 
-@Pattern(regexp = "[a-zA-Z ]+", message = "Only alphanumeric or spaces allowed")
+@Pattern(regexp = "[a-zA-Z ]+", message = "Only alphabetic or spaces allowed")
 @Documented
 @Constraint(validatedBy = {})
 @Target( { ElementType.FIELD })
 @Retention(RetentionPolicy.RUNTIME)
-public @interface OnlyAlphanumericOrSpaces {
-    String message() default "Invalid phone number";
+public @interface OnlyAlphabeticOrSpaces {
+    String message() default "";
     Class<?>[] groups() default {};
     Class<? extends Payload>[] payload() default {};
 }

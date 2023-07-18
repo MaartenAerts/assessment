@@ -65,6 +65,6 @@ public class WordRelationService {
                 return findPath(target, extendedPath);
             }
         }
-        return emptyList();
+        return path;
     }
 }

@@ -123,11 +123,11 @@ class WordRelationTest {
                     .andExpect(content().json("""
                             [
                               {
-                                "message": "Only alphanumeric or spaces allowed",
+                                "message": "Only alphabetic or spaces allowed",
                                 "field": "firstWord"
                               },
                               {
-                                "message": "Only alphanumeric or spaces allowed",
+                                "message": "Only alphabetic or spaces allowed",
                                 "field": "secondWord"
                               }
                             ]
@@ -326,6 +326,16 @@ class WordRelationTest {
                               }
                             ]
                                                                                    """));
+        }
+        @Test
+        @DisplayName("given no path exists then 404 not found")
+        void pathNotFound() throws Exception {
+            repository.save(sonDaughterAntonym());
+            repository.save(roadStreetAntonym());
+            repository.save(roadAvenueRelated());
+
+            mockMvc.perform(get(BASE_URL + "/path/street/son"))
+                    .andExpect(status().isNotFound());
         }
         @Test
         @DisplayName("given multiple linked relations including inverse and transitive then path is returned")

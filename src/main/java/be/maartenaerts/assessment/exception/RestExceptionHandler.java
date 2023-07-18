@@ -37,6 +37,11 @@ public class RestExceptionHandler {
         return ResponseEntity.status(409).body(Collections.singletonList(new ErrorDTO(exception.getMessage())));
     }
 
+    @ExceptionHandler(NotFoundException.class)
+    public ResponseEntity<Object> notFoundException() {
+        return ResponseEntity.notFound().build();
+    }
+
     @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ResponseEntity<List<ErrorDTO>> exception(Exception exception) {

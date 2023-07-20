@@ -1,6 +1,5 @@
 package be.maartenaerts.assessment.wordrelation;
 
-import be.maartenaerts.assessment.exception.ConflictException;
 import be.maartenaerts.assessment.exception.NotFoundException;
 import be.maartenaerts.assessment.wordrelation.path.PathNode;
 import lombok.AllArgsConstructor;
@@ -19,10 +18,6 @@ public class WordRelationService {
     private WordRelationRepository repository;
 
     public WordRelation create(WordRelation wordRelation) {
-        if (repository.existsByFirstWordAndSecondWord(wordRelation.getSecondWord(), wordRelation.getFirstWord())) {
-//            Can't be done with constraint in in-memory database
-            throw new ConflictException("Inverse relation already exists");
-        }
         return repository.save(wordRelation);
     }
 

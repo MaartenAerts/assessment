@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
@@ -23,6 +24,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest(properties = {"spring.flyway.clean-disabled=false"})
 @AutoConfigureMockMvc
+@Import(TestContainerConfiguration.class)
 class WordRelationTest {
 
     public static final String BASE_URL = "/word-relation";
@@ -104,7 +106,7 @@ class WordRelationTest {
                             """))
                     .andExpect(status().isConflict())
                     .andExpect(content().json("""
-                            [{"message":"Inverse relation already exists"}]
+                            [{"message":"Relation already exists"}]
                             """));
         }
 
@@ -372,7 +374,6 @@ class WordRelationTest {
             repository.save(sonDaughterAntonym());
             repository.save(roadStreetAntonym());
             repository.save(roadAvenueRelated());
-            repository.save(streetRoadSynonym());
             repository.save(new WordRelation("intersection", "avenue", RELATED));
             repository.save(new WordRelation("intersection", "cul de sac", RELATED));
             repository.save(new WordRelation("cul de sac", "avenue", RELATED));

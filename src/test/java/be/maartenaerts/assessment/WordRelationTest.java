@@ -308,7 +308,6 @@ class WordRelationTest {
             repository.save(sonDaughterAntonym());
             repository.save(roadStreetAntonym());
             repository.save(roadAvenueRelated());
-            repository.save(streetRoadSynonym());
 
             mockMvc.perform(get(BASE_URL + "/path/street/avenue"))
                     .andExpect(status().isOk())
@@ -341,9 +340,41 @@ class WordRelationTest {
         @DisplayName("given multiple linked relations including inverse and transitive then path is returned")
         void complexPath() throws Exception {
             repository.save(sonDaughterAntonym());
+            repository.save(roadAvenueRelated());
+            repository.save(streetRoadSynonym());
+            repository.save(new WordRelation("cul de sac", "avenue", RELATED));
+
+            mockMvc.perform(get(BASE_URL + "/path/street/cul de sac"))
+                    .andExpect(status().isOk())
+                    .andExpect(content().json("""
+                            [
+                              {
+                                "start": "street",
+                                "type": "synonym",
+                                "end": "road"
+                              },
+                              {
+                                "start": "road",
+                                "type": "related",
+                                "end": "avenue"
+                              },
+                              {
+                                "start": "avenue",
+                                "type": "related",
+                                "end": "cul de sac"
+                              }
+                            ]
+                                                                                                              \s"""));
+        }
+        @Test
+        @DisplayName("given multiple paths then shortest path is returned")
+        void shortestPath() throws Exception {
+            repository.save(sonDaughterAntonym());
             repository.save(roadStreetAntonym());
             repository.save(roadAvenueRelated());
             repository.save(streetRoadSynonym());
+            repository.save(new WordRelation("intersection", "avenue", RELATED));
+            repository.save(new WordRelation("intersection", "cul de sac", RELATED));
             repository.save(new WordRelation("cul de sac", "avenue", RELATED));
 
             mockMvc.perform(get(BASE_URL + "/path/street/cul de sac"))

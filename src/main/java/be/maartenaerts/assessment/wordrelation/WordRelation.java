@@ -9,6 +9,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+import org.apache.commons.lang3.builder.EqualsBuilder;
 
 @Getter
 @Setter
@@ -29,5 +30,21 @@ public class WordRelation {
         this.firstWord = firstWord.toLowerCase().trim();
         this.secondWord = secondWord.toLowerCase().trim();
         this.type = type.toLowerCase().trim();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+
+        if (o == null || getClass() != o.getClass()) return false;
+
+        WordRelation that = (WordRelation) o;
+
+        return new EqualsBuilder().append(getId(), that.getId()).isEquals();
+    }
+
+    @Override
+    public int hashCode() {
+        return 0;
     }
 }
